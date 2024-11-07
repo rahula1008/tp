@@ -59,6 +59,8 @@ public class Deadline {
                 return false;
             }
 
+            assert year > 0 : "The year should not be negative or 0";
+
             try {
                 // LocalDate::of method handles invalid dates like 31st Feb or -3rd of the 13th month
                 LocalDate.of(year, month, day);
