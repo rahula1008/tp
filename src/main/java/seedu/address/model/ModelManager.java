@@ -11,9 +11,9 @@ import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Person;
@@ -32,7 +32,6 @@ public class ModelManager implements Model {
     private final ArchivedAddressBook archivedAddressBook;
     private final FilteredList<Person> filteredArchivedPersons;
     private final FilteredList<Person> filteredPersons;
-    private SortedList<Person> sortedPersons;
     private Comparator<Person> currentComparator = null;
     private final ReminderManager reminderManager;
 
@@ -50,7 +49,6 @@ public class ModelManager implements Model {
         this.archivedAddressBook = new ArchivedAddressBook(archivedAddressBook);
         filteredArchivedPersons = new FilteredList<>(this.archivedAddressBook.getPersonList());
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
-        sortedPersons = new SortedList<>(filteredPersons);
         reminderManager = new ReminderManager(this.addressBook.getPersonList());
     }
 
@@ -181,7 +179,7 @@ public class ModelManager implements Model {
         if (isArchivedList) {
             return filteredArchivedPersons;
         } else {
-            return sortedPersons;
+            return filteredPersons;
         }
     }
 
@@ -198,26 +196,36 @@ public class ModelManager implements Model {
     /**
      * Sorts the person list by deadline/name, whether it's filtered or full, then updates the address book
      */
+    //@Override
+    // public void sortByComparator(Comparator<Person> comparator) {
+    //     currentComparator = comparator;
+
+    //     // Initial size of the addressBook with all contacts
+    //     int initialSize = addressBook.getPersonList().size();
+
+    //     //Initial size of filtered persons i.e if a FindCommand has been executed
+    //     int initialSortedSize = sortedPersons.size();
+
+    //     sortedPersons.setComparator(comparator);
+
+    //     SortedList<Person> sortedAllPersons = new SortedList<>(this.addressBook.getPersonList());
+    //     sortedAllPersons.setComparator(comparator);
+
+    //     // Assert that sizes remains same after sorting
+    //     assert sortedAllPersons.size() == initialSize;
+    //     assert sortedPersons.size() == initialSortedSize;
+
+    //     addressBook.setPersons(sortedAllPersons);
+    // }
+
     @Override
     public void sortByComparator(Comparator<Person> comparator) {
         currentComparator = comparator;
-
-        // Initial size of the addressBook with all contacts
         int initialSize = addressBook.getPersonList().size();
-
-        //Initial size of filtered persons i.e if a FindCommand has been executed
-        int initialSortedSize = sortedPersons.size();
-
-        sortedPersons.setComparator(comparator);
-
-        SortedList<Person> sortedAllPersons = new SortedList<>(this.addressBook.getPersonList());
-        sortedAllPersons.setComparator(comparator);
-
-        // Assert that sizes remains same after sorting
-        assert sortedAllPersons.size() == initialSize;
-        assert sortedPersons.size() == initialSortedSize;
-
-        addressBook.setPersons(sortedAllPersons);
+        ObservableList<Person> sortedList = FXCollections.observableArrayList(addressBook.getPersonList());
+        FXCollections.sort(sortedList, comparator);
+        addressBook.setPersons(sortedList);
+        assert addressBook.getPersonList().size() == initialSize;
     }
 
     //=========== Reminder Manager ==========================================================================
